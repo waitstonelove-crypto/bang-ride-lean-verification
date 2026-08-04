@@ -11,8 +11,7 @@ maxSynthPendingDepth = 3
 
 [[require]]
 name = "mathlib"
-scope = "leanprover-community"
-rev = "v4.32.2"
+path = "../../mathlib"
 
 [[lean_lib]]
 name = "BangRide"

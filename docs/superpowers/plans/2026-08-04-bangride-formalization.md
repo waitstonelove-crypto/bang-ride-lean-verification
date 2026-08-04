@@ -10,10 +10,13 @@
 
 **项目位置：`D:\AI\lean\projects\bangride`**（2026-08-04 会话重建，无历史包袱）。
 
-**环境事实（必须遵守）：**
-- 所有命令在 bash 下运行；`export ELAN_HOME="D:/AI/lean/elan"` 后使用 `lake build` / `lake env lean`
-- 构建前先 `lake exe cache get` 拉 Mathlib v4.32.2 预编译 olean（避免全量编译）
-- Mathlib v4.32.2 已知坑：标识符禁止 `*`/`λ`；`½` 解析失败用 `(1/2)`；矩阵缩写 `Mat` 不可用（本计划不用矩阵）；Lean 证明子代理输出上限已设 `CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000`
+**环境事实（必须遵守，2026-08-04 用户重建布局后）：**
+- 所有命令在 bash 下运行；每次先 `export ELAN_HOME="D:/AI/lean/elan"` 与 `export PATH="D:/AI/lean/elan/bin:$PATH"`，再 `lake build` / `lake env lean`
+- **共享 Mathlib**：`D:\AI\lean\mathlib`（git 浅克隆 v4.32.2 + 预编译 olean 于 `D:\AI\lean\mathlib\.lake`），项目 lakefile 用 `[[require]] name = "mathlib" path = "../../mathlib"` 引用——**不要**用 git rev 方式（会触发 mathlib 全量编译）
+- **根模块文件**：lib `BangRide` 需要在项目根有 `BangRide.lean`（import 各子模块），否则 lake 报 "some modules have bad imports"
+- 首次构建需编译辅助包（batteries/aesop 等 ~137 jobs，约 10-20 分钟）；之后秒级
+- lakefile 变更后：`lake update mathlib` 同步 lake-manifest.json
+- Mathlib v4.32.2 已知坑（本会话新增，来自 tte-ftsmc 项目实证）：标识符禁止 `*`/`λ`；`½` 解析失败用 `(1/2)`；矩阵缩写 `Mat` 不可用（本计划不用矩阵）；**rpow 与自然幂不定义相等**（`x^2` ≠ `x^(2:ℝ)`，用 `Real.rpow_natCast` 显式桥接）；`nlinarith` 不知道 rpow 非负（显式 `Real.rpow_nonneg (abs_nonneg x) a`）；`le_trans` 第一参数是左端；`HasDerivAt.pow 2` 导数形如 `2·(s t·deriv s t)`；Lean 证明子代理输出上限已设 `CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000`
 - 提交信息用中文，风格：`docs: ...` / `feat: ...`
 
 ---
@@ -23,23 +26,16 @@
 **Files:**
 - Create: `BangRide/Core.lean`（最小骨架，仅 namespace + trivial 定理，验证工具链）
 
-- [ ] **Step 1: 下载 Mathlib 预编译缓存并首次构建**
+- [ ] **Step 1: 环境准备**（已完成：lakefile 已改为共享 mathlib path 引用；`lake update mathlib` 已同步 manifest；首次构建辅助包进行中）
 
-```bash
-cd /d/AI/lean/projects/bangride
-export ELAN_HOME="D:/AI/lean/elan"
-lake exe cache get
-```
-Expected: 输出下载若干 mathlib olean 包（无错误）。若 `cache` 子命令不存在，回退为直接 `lake build`（首次构建 mathlib 可能 30-60 分钟，放后台）。
-
-- [ ] **Step 2: 写最小 Core.lean 骨架**（已完成：仅 `smoke_test : True := by trivial`）
+- [ ] **Step 2: 写最小 Core.lean 骨架**（已完成：仅 `smoke_test : True := by trivial`；根模块 `BangRide.lean` 已建）
 
 - [ ] **Step 3: 构建验证**
 
 ```bash
-cd /d/AI/lean/projects/bangride && export ELAN_HOME="D:/AI/lean/elan" && lake build
+cd /d/AI/lean/projects/bangride && export ELAN_HOME="D:/AI/lean/elan" && export PATH="D:/AI/lean/elan/bin:$PATH" && lake build
 ```
-Expected: 构建成功（无错误输出，exit code 0）。
+Expected: 构建成功（无错误输出，exit code 0）。首次构建含辅助包编译（~137 jobs，10-20 分钟）。
 
 - [ ] **Step 4: 初始化 git 并提交**
 
