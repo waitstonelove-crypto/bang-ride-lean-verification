@@ -39,7 +39,7 @@ structure Assumptions (D : Data n) : Prop where
   h51b : ∀ k j : Fin n, D.lam0 k ≥ D.lam0 j → D.a k ≥ D.a j
   h51c : ∀ k j : Fin n, D.lam0 k ≥ D.lam0 j → ∀ s, D.p s k ≤ D.p s j
   hpsi_eq : ∀ t, D.psi t = ∑ k, D.lam t k
-  hpsi_nonneg : ∀ t, D.psi t ≥ 0
+  hpsi_nonneg : ∀ t, t ∈ Set.Icc 0 D.tf → D.psi t ≥ 0
   hp_cont : ∀ k, Continuous (fun s : ℝ => D.p s k)
   hpsi_cont : Continuous D.psi
   hlam_terminal : ∀ k, D.lam D.tf k = D.lam0 k

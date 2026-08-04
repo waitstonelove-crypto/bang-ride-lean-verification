@@ -20,6 +20,11 @@ import BangRide.Core
 noncomputable section
 open scoped BigOperators
 
+-- convert 产生的目标（值/实例/函数等式）顺序在不同构建间不稳定，
+-- `all_goals first | rfl | ring | (funext ...)` 保证鲁棒性；未用分支的 lint 警告属正常。
+set_option linter.unreachableTactic false
+set_option linter.unusedTactic false
+
 namespace BangRide
 
 namespace Data
@@ -41,8 +46,7 @@ theorem variation_of_constants_forward (A : D.Assumptions) (k : Fin n) :
     have hg2 : HasDerivAt (fun x : ℝ => D.a k * (x - D.tf)) (D.a k) s := by
       simpa using ((hasDerivAt_id s).sub_const D.tf).const_mul (D.a k)
     convert hg2 using 1
-    · funext x
-      ring
+    all_goals first | rfl | (funext x; dsimp [g]; ring)
   have hh' : ∀ s, HasDerivAt h (f' s) s := by
     intro s
     dsimp [f', h]
@@ -50,10 +54,7 @@ theorem variation_of_constants_forward (A : D.Assumptions) (k : Fin n) :
       convert (Real.hasDerivAt_exp (g s)).comp s (hg' s) using 1
       all_goals first | rfl | (funext x; rfl)
     convert (hexp'.mul (A.hlam_ode k s)) using 1
-    · rfl
-    · rfl
-    · dsimp [g]
-      ring
+    all_goals first | rfl | ring | (funext x; dsimp [g]; ring)
   have hf'_cont : Continuous f' := by
     dsimp [f', g]
     exact ((Real.continuous_exp.comp
