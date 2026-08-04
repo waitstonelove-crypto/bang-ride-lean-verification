@@ -36,7 +36,9 @@ lemma double_sum_identity {n : ℕ} (a b : Fin n → ℝ) :
           - (∑ i : Fin n, ∑ j : Fin n, a j * b i) + (∑ i : Fin n, ∑ j : Fin n, a j * b j) := by
             simp [Finset.sum_sub_distrib, Finset.sum_add_distrib]
     _ = 2 * (n : ℝ) * (∑ i : Fin n, a i * b i) - 2 * (∑ i : Fin n, a i) * (∑ i : Fin n, b i) := by
-            have h1 : (∑ i : Fin n, ∑ j : Fin n, a i * b i) = (n : ℝ) * (∑ i : Fin n, a i * b i) := by
+            have h1 :
+                (∑ i : Fin n, ∑ j : Fin n, a i * b i)
+                  = (n : ℝ) * (∑ i : Fin n, a i * b i) := by
               calc
                 (∑ i : Fin n, ∑ j : Fin n, a i * b i)
                     = ∑ i : Fin n, ((Finset.univ : Finset (Fin n)).card • (a i * b i)) := by
@@ -53,7 +55,8 @@ lemma double_sum_identity {n : ℕ} (a b : Fin n → ℝ) :
                 (∑ i : Fin n, ∑ j : Fin n, a i * b j)
                   = (∑ i : Fin n, a i) * (∑ i : Fin n, b i) := by
               calc
-                (∑ i : Fin n, ∑ j : Fin n, a i * b j) = ∑ i : Fin n, (a i * (∑ j : Fin n, b j)) := by
+                (∑ i : Fin n, ∑ j : Fin n, a i * b j)
+                    = ∑ i : Fin n, (a i * (∑ j : Fin n, b j)) := by
                         apply Finset.sum_congr rfl
                         intro i _
                         rw [Finset.mul_sum]
@@ -63,13 +66,16 @@ lemma double_sum_identity {n : ℕ} (a b : Fin n → ℝ) :
                 (∑ i : Fin n, ∑ j : Fin n, a j * b i)
                   = (∑ i : Fin n, a i) * (∑ i : Fin n, b i) := by
               calc
-                (∑ i : Fin n, ∑ j : Fin n, a j * b i) = ∑ i : Fin n, ((∑ j : Fin n, a j) * b i) := by
+                (∑ i : Fin n, ∑ j : Fin n, a j * b i)
+                    = ∑ i : Fin n, ((∑ j : Fin n, a j) * b i) := by
                         apply Finset.sum_congr rfl
                         intro i _
                         rw [Finset.sum_mul]
                 _ = (∑ i : Fin n, a i) * (∑ i : Fin n, b i) := by
                         rw [← Finset.mul_sum]
-            have h4 : (∑ i : Fin n, ∑ j : Fin n, a j * b j) = (n : ℝ) * (∑ i : Fin n, a i * b i) := by
+            have h4 :
+                (∑ i : Fin n, ∑ j : Fin n, a j * b j)
+                  = (n : ℝ) * (∑ i : Fin n, a i * b i) := by
               calc
                 (∑ i : Fin n, ∑ j : Fin n, a j * b j)
                     = ((Finset.univ : Finset (Fin n)).card • (∑ j : Fin n, a j * b j)) := by

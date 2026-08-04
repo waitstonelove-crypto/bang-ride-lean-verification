@@ -26,10 +26,10 @@ noncomputable section
 open scoped BigOperators
 
 -- convert 目标顺序不稳定，`all_goals first | ...` 的未用分支属正常；
--- `simp [counterexample]` 展开反例定义属有意为之
+-- `simp [counterexample]` 展开反例定义属有意为之（linter.flexible 为 scoped 选项，
+-- 需在具体声明上用 `set_option ... in` 作用域）
 set_option linter.unreachableTactic false
 set_option linter.unusedTactic false
-set_option linter.flexible false
 
 namespace BangRide
 
@@ -46,6 +46,7 @@ def counterexample : Data 3 where
 namespace Counterexample
 
 /-- 反例满足全部假设束字段 -/
+set_option linter.flexible false in
 theorem assumptions : (counterexample : Data 3).Assumptions := by
   constructor
   · norm_num [counterexample]
@@ -117,6 +118,7 @@ end Counterexample
     对 (1,2)：λ₀₁ = -1 ≥ -2 = λ₀₂（且 a₁ = 0 ≥ a₂ = -3），
     但 t=1 处 λ₁(1) = -1 < λ₂(1) = -2e^{-3} ≈ -0.0996。
     所有假设字段由 `Counterexample.assumptions` 保证。 -/
+set_option linter.flexible false in
 theorem order_preservation_counterexample :
     ∃ t, t ∈ Set.Icc 0 2 ∧
       counterexample.lam0 1 ≥ counterexample.lam0 2 ∧
