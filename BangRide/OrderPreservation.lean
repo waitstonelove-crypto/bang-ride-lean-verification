@@ -25,9 +25,11 @@ import BangRide.VariationOfConstants
 noncomputable section
 open scoped BigOperators
 
--- convert 目标顺序不稳定，`all_goals first | ...` 的未用分支属正常
+-- convert 目标顺序不稳定，`all_goals first | ...` 的未用分支属正常；
+-- `simp [counterexample]` 展开反例定义属有意为之
 set_option linter.unreachableTactic false
 set_option linter.unusedTactic false
+set_option linter.flexible false
 
 namespace BangRide
 
@@ -59,7 +61,10 @@ theorem assumptions : (counterexample : Data 3).Assumptions := by
     simp [counterexample]
   · -- hpsi_eq
     intro t
-    simp [counterexample, Fin.sum_univ_three, Real.exp_zero]
+    change counterexample.psi t = ∑ k : Fin 3, counterexample.lam t k
+    dsimp [counterexample]
+    rw [Fin.sum_univ_three]
+    simp [Real.exp_zero]
     ring
   · -- hpsi_nonneg：∀ t ∈ [0,2]，ψ(t) = 10e^{5(2-t)} - 1 - 2e^{-3(2-t)} ≥ 7
     intro t ht
@@ -106,5 +111,38 @@ theorem assumptions : (counterexample : Data 3).Assumptions := by
     all_goals first | rfl | ring | (funext x; dsimp; ring)
 
 end Counterexample
+
+/-- 定理 A：论文"λₖ(tf) ≥ λⱼ(tf) ⟹ λₖ(t) ≥ λⱼ(t)"在 Assumption 5.1 原假设下为假。
+    反例（n=3, a=(5,0,-3), λ₀=(10,-1,-2), p≡0, tf=2）：
+    对 (1,2)：λ₀₁ = -1 ≥ -2 = λ₀₂（且 a₁ = 0 ≥ a₂ = -3），
+    但 t=1 处 λ₁(1) = -1 < λ₂(1) = -2e^{-3} ≈ -0.0996。
+    所有假设字段由 `Counterexample.assumptions` 保证。 -/
+theorem order_preservation_counterexample :
+    ∃ t, t ∈ Set.Icc 0 2 ∧
+      counterexample.lam0 1 ≥ counterexample.lam0 2 ∧
+      counterexample.lam t 1 < counterexample.lam t 2 := by
+  refine ⟨1, ?_, ?_, ?_⟩
+  · norm_num [Set.Icc]
+  · simp [counterexample]
+  · -- λ₁(1) = -1 < λ₂(1) = -2·e^{-3}
+    have h_e3 : (2 : ℝ) < Real.exp 3 := by
+      have h2 : (2 : ℝ) ≤ Real.exp 1 := by
+        nlinarith [Real.add_one_le_exp (1 : ℝ)]
+      have hpow : (2 : ℝ) ^ 3 ≤ Real.exp 1 ^ 3 := by
+        exact pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) h2 3
+      have hconn : Real.exp 1 ^ 3 = Real.exp 3 := by
+        rw [← Real.exp_nat_mul 1 3]
+        norm_num
+      rw [hconn] at hpow
+      norm_num at hpow
+      nlinarith
+    have h_half : Real.exp (-3) < (1 / 2 : ℝ) := by
+      have hinv : (Real.exp 3)⁻¹ < (2 : ℝ)⁻¹ := by
+        exact (inv_lt_inv₀ (Real.exp_pos 3) (by norm_num : (0 : ℝ) < 2)).mpr h_e3
+      simpa [Real.exp_neg, one_div] using hinv
+    dsimp [counterexample]
+    simp [Real.exp_zero]
+    norm_num
+    nlinarith [h_half]
 
 end BangRide
